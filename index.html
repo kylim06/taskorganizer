@@ -1,9 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mini App de Prazos</title>
+  <title>Task Organizer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,78 +11,197 @@
       padding: 0;
       background-color: #121212;
       color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       min-height: 100vh;
     }
 
-    #login-section, #app-section {
-      background-color: #1e1e1e;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      width: 320px;
+    header {
+      background: #1e1e1e;
+      padding: 15px;
       text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      position: relative;
     }
 
-    input, select, button {
+    #logout-btn {
+      position: absolute;
+      left: 15px;
+      top: 15px;
+      background: #6200ee;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+    }
+    #logout-btn:hover { background: #3700b3; }
+
+    #login-section, #app-section {
+      background-color: #1e1e1e;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
+      width: 350px;
+      margin: 40px auto;
+    }
+
+    label {
+      text-align: left;
+      display: block;
+      margin-top: 10px;
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    input, button {
       width: 100%;
-      margin: 8px 0;
       padding: 10px;
       border-radius: 5px;
       border: none;
+      margin-bottom: 10px;
       box-sizing: border-box;
     }
 
     button {
       background-color: #6200ee;
       color: #fff;
-      cursor: pointer;
       font-weight: bold;
+      cursor: pointer;
     }
-
-    button:hover {
-      background-color: #3700b3;
-    }
+    button:hover { background-color: #3700b3; }
 
     .hidden { display: none; }
 
-    ul { list-style: none; padding: 0; margin-top: 15px; }
-    li { padding: 8px; margin-bottom: 5px; border-radius: 5px; }
+    /* Lista de tarefas */
+    #tasks-list {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 0;
+      list-style: none;
+    }
 
-    li.verde { background: #2e7d32; color: #fff; }
-    li.laranja { background: #f9a825; color: #000; }
-    li.vermelho { background: #c62828; color: #fff; }
-    li.alerta { background: #b71c1c; color: #fff; font-weight: bold; }
+    .task {
+      background: #1e1e1e;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .task:hover { background: #292929; }
+
+    .task .info {
+      flex: 1;
+      margin-left: 10px;
+    }
+
+    .task .title {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .task .details {
+      font-size: 13px;
+      color: #bbb;
+      margin-top: 5px;
+      display: none;
+    }
+    .task.expanded .details { display: block; }
+
+    /* Bolinha de status */
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .verde { background: #2e7d32; }
+    .laranja { background: #f9a825; }
+    .vermelho { background: #c62828; }
+    .alerta { background: #b71c1c; }
+
+    /* Botão excluir */
+    .delete-btn {
+      margin-left: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #f44336;
+      font-size: 18px;
+      display: none;
+    }
+    .task.expanded .delete-btn { display: inline; }
+
+    /* Modal confirmação */
+    #confirm-modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+    }
+    #confirm-modal.active { visibility: visible; }
+
+    #confirm-box {
+      background: #1e1e1e;
+      padding: 25px;
+      border-radius: 8px;
+      text-align: center;
+      width: 300px;
+    }
+    #confirm-box p { margin-bottom: 20px; }
+
+    #confirm-box button {
+      width: 100px;
+      margin: 5px;
+    }
   </style>
 </head>
 <body>
+  <header>
+    Task Organizer
+    <button id="logout-btn" class="hidden">Sair</button>
+  </header>
+
   <div id="login-section">
     <h2>Login / Registro</h2>
     <div id="message" style="text-align:center; margin-bottom:10px;"></div>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Senha" />
+    <label>Email</label>
+    <input type="email" id="email" />
+    <label>Senha</label>
+    <input type="password" id="password" />
     <button id="login-btn">Login</button>
     <button id="register-btn">Registrar</button>
   </div>
 
   <div id="app-section" class="hidden">
-    <button id="logout-btn">Sair</button>
-    <h2>Minhas Tarefas</h2>
+    <h2>Adicionar Tarefa</h2>
     <form id="task-form">
-      <input type="text" id="titulo" placeholder="Título" required />
-      <input type="text" id="cliente" placeholder="Cliente" required />
-      <input type="text" id="descricao" placeholder="Descrição" required />
+      <label>Título</label>
+      <input type="text" id="titulo" required />
+      <label>Cliente</label>
+      <input type="text" id="cliente" required />
+      <label>Descrição</label>
+      <input type="text" id="descricao" required />
+      <label>Prazo</label>
       <input type="date" id="prazo" required />
-      <select id="prioridade">
-        <option value="baixa">Baixa</option>
-        <option value="media">Média</option>
-        <option value="alta">Alta</option>
-      </select>
       <button type="submit">Adicionar</button>
     </form>
-    <ul id="tasks-list"></ul>
+  </div>
+
+  <ul id="tasks-list"></ul>
+
+  <!-- Modal confirmação -->
+  <div id="confirm-modal">
+    <div id="confirm-box">
+      <p>Deseja mesmo excluir esta tarefa?</p>
+      <button id="confirm-yes">Sim</button>
+      <button id="confirm-no">Não</button>
+    </div>
   </div>
 
   <!-- Firebase compat -->
@@ -91,7 +210,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // Configuração correta do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyASdljETbk28Lx8iNtKT3sQyP8jGv5_Z2c",
       authDomain: "mini-app-prazos.firebaseapp.com",
@@ -109,7 +227,6 @@
     const loginSection = document.getElementById("login-section");
     const appSection = document.getElementById("app-section");
     const message = document.getElementById("message");
-    const taskForm = document.getElementById("task-form");
     const tasksList = document.getElementById("tasks-list");
     const logoutBtn = document.getElementById("logout-btn");
 
@@ -149,15 +266,18 @@
       if (user) {
         loginSection.classList.add("hidden");
         appSection.classList.remove("hidden");
+        logoutBtn.classList.remove("hidden");
         carregarTarefas(user.uid);
       } else {
         loginSection.classList.remove("hidden");
         appSection.classList.add("hidden");
+        logoutBtn.classList.add("hidden");
+        tasksList.innerHTML = "";
       }
     });
 
     // Adicionar tarefa
-    taskForm.onsubmit = async (e) => {
+    document.getElementById("task-form").onsubmit = async (e) => {
       e.preventDefault();
       const user = auth.currentUser;
       if (!user) return;
@@ -166,14 +286,13 @@
       const descricao = document.getElementById("descricao").value;
       const cliente = document.getElementById("cliente").value;
       const prazo = document.getElementById("prazo").value;
-      const prioridade = document.getElementById("prioridade").value;
 
       await db.collection("users").doc(user.uid).collection("tasks").add({
-        titulo, descricao, cliente, prazo, prioridade,
+        titulo, descricao, cliente, prazo,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      taskForm.reset();
+      e.target.reset();
     };
 
     // Carregar tarefas
@@ -182,27 +301,82 @@
         .orderBy("prazo")
         .onSnapshot(snapshot => {
           tasksList.innerHTML = "";
+          const hoje = new Date();
+          const tarefas = [];
+
           snapshot.forEach(doc => {
             const t = doc.data();
-            const li = document.createElement("li");
+            tarefas.push({id: doc.id, ...t});
+          });
 
-            const hoje = new Date();
+          // Ordenar pelo prazo mais próximo
+          tarefas.sort((a, b) => new Date(a.prazo) - new Date(b.prazo));
+
+          tarefas.forEach(t => {
             const prazo = new Date(t.prazo);
             const total = prazo - new Date(t.createdAt?.toDate?.() || hoje);
             const decorrido = hoje - new Date(t.createdAt?.toDate?.() || hoje);
             const progresso = total > 0 ? Math.min((decorrido / total) * 100, 100) : 100;
 
-            let classe = "verde";
-            if (progresso >= 40 && progresso < 60) classe = "laranja";
-            else if (progresso >= 60 && progresso < 85) classe = "vermelho";
-            else if (progresso >= 85) classe = "alerta";
+            let cor = "verde";
+            if (progresso >= 40 && progresso < 60) cor = "laranja";
+            else if (progresso >= 60 && progresso < 85) cor = "vermelho";
+            else if (progresso >= 85) cor = "alerta";
 
-            li.className = classe;
-            li.textContent = `${t.titulo} - Cliente: ${t.cliente} | Prazo: ${t.prazo} | ${Math.floor(progresso)}% do prazo decorrido`;
+            const li = document.createElement("li");
+            li.className = "task";
+
+            const dot = document.createElement("div");
+            dot.className = `status-dot ${cor}`;
+
+            const info = document.createElement("div");
+            info.className = "info";
+            info.innerHTML = `<div class="title">${t.titulo} - Cliente: ${t.cliente} | Prazo: ${t.prazo}</div>
+                              <div class="details">${t.descricao} <br>${Math.floor(progresso)}% do prazo decorrido</div>`;
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete-btn";
+            deleteBtn.innerHTML = "🗑️";
+
+            deleteBtn.onclick = (ev) => {
+              ev.stopPropagation();
+              abrirConfirmacao(uid, t.id);
+            };
+
+            li.appendChild(dot);
+            li.appendChild(info);
+            li.appendChild(deleteBtn);
+
+            li.onclick = () => li.classList.toggle("expanded");
+
             tasksList.appendChild(li);
           });
         });
     }
+
+    // Modal confirmação
+    const confirmModal = document.getElementById("confirm-modal");
+    const confirmYes = document.getElementById("confirm-yes");
+    const confirmNo = document.getElementById("confirm-no");
+    let tarefaParaExcluir = null;
+
+    function abrirConfirmacao(uid, id) {
+      confirmModal.classList.add("active");
+      tarefaParaExcluir = {uid, id};
+    }
+
+    confirmNo.onclick = () => {
+      confirmModal.classList.remove("active");
+      tarefaParaExcluir = null;
+    };
+
+    confirmYes.onclick = async () => {
+      if (tarefaParaExcluir) {
+        await db.collection("users").doc(tarefaParaExcluir.uid).collection("tasks").doc(tarefaParaExcluir.id).delete();
+      }
+      confirmModal.classList.remove("active");
+      tarefaParaExcluir = null;
+    };
   </script>
 </body>
 </html>
