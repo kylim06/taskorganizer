@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -22,7 +22,8 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      width: 300px;
+      width: 320px;
+      text-align: center;
     }
 
     input, select, button {
@@ -31,6 +32,7 @@
       padding: 10px;
       border-radius: 5px;
       border: none;
+      box-sizing: border-box;
     }
 
     button {
@@ -89,14 +91,15 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
   <script>
-    // Substitua pelas suas credenciais do Firebase
+    // Configuração correta do Firebase
     const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_PROJECT_ID.firebaseapp.com",
-      projectId: "SEU_PROJECT_ID",
-      storageBucket: "SEU_PROJECT_ID.appspot.com",
-      messagingSenderId: "SEU_MESSAGING_ID",
-      appId: "SEU_APP_ID"
+      apiKey: "AIzaSyASdljETbk28Lx8iNtKT3sQyP8jGv5_Z2c",
+      authDomain: "mini-app-prazos.firebaseapp.com",
+      projectId: "mini-app-prazos",
+      storageBucket: "mini-app-prazos.appspot.com",
+      messagingSenderId: "865106773358",
+      appId: "1:865106773358:web:d6958799a298ff3545ed7f",
+      measurementId: "G-6FL25L93J0"
     };
 
     firebase.initializeApp(firebaseConfig);
