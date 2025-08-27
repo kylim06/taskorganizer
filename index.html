@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mini App de Prazos</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 8px; margin-bottom: 5px; border-radius: 5px; }
+    .verde { background: #d4edda; }
+    .laranja { background: #fff3cd; }
+    .vermelho { background: #f8d7da; }
+    .alerta { background: #f5c6cb; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Mini App de Prazos</h1>
+
+  <!-- Área de login -->
+  <div id="login-section">
+    <h2>Login / Registro</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Senha" />
+    <button id="login-btn">Login</button>
+    <button id="register-btn">Registrar</button>
+  </div>
+
+  <!-- Área do app -->
+  <div id="app-section" class="hidden">
+    <button id="logout-btn">Sair</button>
+    <h2>Minhas Tarefas</h2>
+    <form id="task-form">
+      <input type="text" id="titulo" placeholder="Título" required />
+      <input type="text" id="cliente" placeholder="Cliente" required />
+      <input type="text" id="descricao" placeholder="Descrição" required />
+      <input type="date" id="prazo" required />
+      <select id="prioridade">
+        <option value="baixa">Baixa</option>
+        <option value="media">Média</option>
+        <option value="alta">Alta</option>
+      </select>
+      <button type="submit">Adicionar</button>
+    </form>
+    <ul id="tasks-list"></ul>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+ <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyASdljETbk28Lx8iNtKT3sQyP8jGv5_Z2c",
+    authDomain: "mini-app-prazos.firebaseapp.com",
+    projectId: "mini-app-prazos",
+    storageBucket: "mini-app-prazos.firebasestorage.app",
+    messagingSenderId: "865106773358",
+    appId: "1:865106773358:web:d6958799a298ff3545ed7f",
+    measurementId: "G-6FL25L93J0"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  };
+    const loginSection = document.getElementById("login-section");
+    const appSection = document.getElementById("app-section");
+    const taskForm = document.getElementById("task-form");
+    const tasksList = document.getElementById("tasks-list");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    document.getElementById("login-btn").onclick = async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (e) {
+        alert("Erro no login: " + e.message);
+      }
+    };
+
+    document.getElementById("register-btn").onclick = async () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+      } catch (e) {
+        alert("Erro no registro: " + e.message);
+      }
+    };
+
+    logoutBtn.onclick = () => auth.signOut();
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        loginSection.classList.add("hidden");
+        appSection.classList.remove("hidden");
+        carregarTarefas(user.uid);
+      } else {
+        loginSection.classList.remove("hidden");
+        appSection.classList.add("hidden");
+      }
+    });
+
+    taskForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const titulo = document.getElementById("titulo").value;
+      const descricao = document.getElementById("descricao").value;
+      const cliente = document.getElementById("cliente").value;
+      const prazo = document.getElementById("prazo").value;
+      const prioridade = document.getElementById("prioridade").value;
+
+      await db.collection("users").doc(user.uid).collection("tasks").add({
+        titulo, descricao, cliente, prazo, prioridade,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      taskForm.reset();
+    };
+
+    function carregarTarefas(uid) {
+      db.collection("users").doc(uid).collection("tasks")
+        .orderBy("prazo")
+        .onSnapshot(snapshot => {
+          tasksList.innerHTML = "";
+          snapshot.forEach(doc => {
+            const t = doc.data();
+            const li = document.createElement("li");
+
+            const hoje = new Date();
+            const prazo = new Date(t.prazo);
+            const total = prazo - new Date(t.createdAt?.toDate?.() || hoje);
+            const decorrido = hoje - new Date(t.createdAt?.toDate?.() || hoje);
+            const progresso = total > 0 ? Math.min((decorrido / total) * 100, 100) : 100;
+
+            let classe = "verde";
+            if (progresso >= 40 && progresso < 60) classe = "laranja";
+            else if (progresso >= 60 && progresso < 85) classe = "vermelho";
+            else if (progresso >= 85) classe = "alerta";
+
+            li.className = classe;
+            li.textContent = `${t.titulo} - Cliente: ${t.cliente} | Prazo: ${t.prazo} | ${Math.floor(progresso)}% do prazo decorrido`;
+            tasksList.appendChild(li);
+          });
+        });
+    }
+  </script>
+</body>
+</html>
