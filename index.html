@@ -5,29 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mini App de Prazos</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    #login-section, #app-section {
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      width: 300px;
+    }
+
+    input, select, button {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      background-color: #6200ee;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #3700b3;
+    }
+
     .hidden { display: none; }
-    ul { list-style: none; padding: 0; }
+
+    ul { list-style: none; padding: 0; margin-top: 15px; }
     li { padding: 8px; margin-bottom: 5px; border-radius: 5px; }
-    .verde { background: #d4edda; }
-    .laranja { background: #fff3cd; }
-    .vermelho { background: #f8d7da; }
-    .alerta { background: #f5c6cb; font-weight: bold; }
+
+    li.verde { background: #2e7d32; color: #fff; }
+    li.laranja { background: #f9a825; color: #000; }
+    li.vermelho { background: #c62828; color: #fff; }
+    li.alerta { background: #b71c1c; color: #fff; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Mini App de Prazos</h1>
-
-  <!-- Área de login -->
   <div id="login-section">
     <h2>Login / Registro</h2>
+    <div id="message" style="text-align:center; margin-bottom:10px;"></div>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Senha" />
     <button id="login-btn">Login</button>
     <button id="register-btn">Registrar</button>
   </div>
 
-  <!-- Área do app -->
   <div id="app-section" class="hidden">
     <button id="logout-btn">Sair</button>
     <h2>Minhas Tarefas</h2>
@@ -46,7 +83,7 @@
     <ul id="tasks-list"></ul>
   </div>
 
-  <!-- Firebase SDK compat -->
+  <!-- Firebase compat -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -62,14 +99,13 @@
       appId: "SEU_APP_ID"
     };
 
-    // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // Elementos do DOM
     const loginSection = document.getElementById("login-section");
     const appSection = document.getElementById("app-section");
+    const message = document.getElementById("message");
     const taskForm = document.getElementById("task-form");
     const tasksList = document.getElementById("tasks-list");
     const logoutBtn = document.getElementById("logout-btn");
@@ -80,8 +116,11 @@
       const password = document.getElementById("password").value;
       try {
         await auth.signInWithEmailAndPassword(email, password);
+        message.style.color = "#4caf50";
+        message.textContent = "Login realizado com sucesso!";
       } catch (e) {
-        alert("Erro no login: " + e.message);
+        message.style.color = "#f44336";
+        message.textContent = "Email ou senha incorretos!";
       }
     };
 
@@ -91,8 +130,11 @@
       const password = document.getElementById("password").value;
       try {
         await auth.createUserWithEmailAndPassword(email, password);
+        message.style.color = "#4caf50";
+        message.textContent = "Registro realizado com sucesso!";
       } catch (e) {
-        alert("Erro no registro: " + e.message);
+        message.style.color = "#f44336";
+        message.textContent = "Erro no registro: " + e.message;
       }
     };
 
