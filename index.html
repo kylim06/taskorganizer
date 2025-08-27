@@ -1,382 +1,218 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Task Organizer</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organizador de Tarefas</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #121212;
+      background: #111;
+      font-family: Arial, sans-serif;
       color: #fff;
-      min-height: 100vh;
     }
 
-    header {
-      background: #1e1e1e;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      position: relative;
-    }
-
-    #logout-btn {
-      position: absolute;
-      left: 15px;
-      top: 15px;
-      background: #6200ee;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
-      color: #fff;
-      cursor: pointer;
-    }
-    #logout-btn:hover { background: #3700b3; }
-
-    #login-section, #app-section {
-      background-color: #1e1e1e;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.4);
-      width: 350px;
-      margin: 40px auto;
-    }
-
-    label {
-      text-align: left;
-      display: block;
-      margin-top: 10px;
-      font-size: 14px;
-      margin-bottom: 3px;
-    }
-
-    input, button {
-      width: 100%;
+    /* Botão sair */
+    .top-bar {
+      display: flex;
+      justify-content: flex-start;
       padding: 10px;
-      border-radius: 5px;
-      border: none;
-      margin-bottom: 10px;
-      box-sizing: border-box;
+      background: #1a1a1a;
     }
-
-    button {
-      background-color: #6200ee;
-      color: #fff;
-      font-weight: bold;
+    .logout-btn {
+      background: #6a0dad;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 6px;
       cursor: pointer;
     }
-    button:hover { background-color: #3700b3; }
+    .logout-btn:hover {
+      background: #4b0082;
+    }
 
-    .hidden { display: none; }
+    /* Caixa de adicionar tarefas */
+    .add-task {
+      background: #1e1e1e;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .add-task h3 {
+      margin-top: 0;
+    }
+    .add-task input, .add-task textarea, .add-task button {
+      width: 100%;
+      margin: 5px 0;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+    }
+    .add-task button {
+      background: #6a0dad;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .add-task button:hover {
+      background: #4b0082;
+    }
 
     /* Lista de tarefas */
-    #tasks-list {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 0;
-      list-style: none;
-    }
-
-    .task {
-      background: #1e1e1e;
-      padding: 12px 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
+    .task-list {
+      margin: 20px;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .task-card {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       cursor: pointer;
-      transition: 0.3s;
     }
-    .task:hover { background: #292929; }
-
-    .task .info {
-      flex: 1;
-      margin-left: 10px;
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-
-    .task .title {
+    .task-title {
+      font-size: 18px;
       font-weight: bold;
-      font-size: 16px;
     }
-    .task .details {
-      font-size: 13px;
+    .task-client {
+      font-size: 14px;
       color: #bbb;
-      margin-top: 5px;
+    }
+    .task-body {
       display: none;
+      margin-top: 15px;
     }
-    .task.expanded .details { display: block; }
-
-    /* Bolinha de status */
-    .status-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      flex-shrink: 0;
+    .task-card.expanded .task-body {
+      display: block;
     }
-    .verde { background: #2e7d32; }
-    .laranja { background: #f9a825; }
-    .vermelho { background: #c62828; }
-    .alerta { background: #b71c1c; }
-
-    /* Botão excluir */
+    .task-body p {
+      margin: 6px 0;
+    }
     .delete-btn {
-      margin-left: 10px;
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
       background: none;
       border: none;
       cursor: pointer;
-      color: #f44336;
       font-size: 18px;
-      display: none;
+      color: #bbb;
     }
-    .task.expanded .delete-btn { display: inline; }
+    .delete-btn:hover {
+      color: red;
+    }
 
-    /* Modal confirmação */
-    #confirm-modal {
+    /* Modal de confirmação */
+    .modal {
+      display: none;
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.7);
-      display: flex;
       justify-content: center;
       align-items: center;
-      visibility: hidden;
     }
-    #confirm-modal.active { visibility: visible; }
-
-    #confirm-box {
-      background: #1e1e1e;
-      padding: 25px;
-      border-radius: 8px;
+    .modal-content {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
       text-align: center;
-      width: 300px;
     }
-    #confirm-box p { margin-bottom: 20px; }
-
-    #confirm-box button {
-      width: 100px;
-      margin: 5px;
+    .modal button {
+      margin: 10px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .confirm {
+      background: red;
+      color: white;
+    }
+    .cancel {
+      background: gray;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <header>
-    Task Organizer
-    <button id="logout-btn" class="hidden">Sair</button>
-  </header>
 
-  <div id="login-section">
-    <h2>Login / Registro</h2>
-    <div id="message" style="text-align:center; margin-bottom:10px;"></div>
-    <label>Email</label>
-    <input type="email" id="email" />
-    <label>Senha</label>
-    <input type="password" id="password" />
-    <button id="login-btn">Login</button>
-    <button id="register-btn">Registrar</button>
+  <!-- Top bar com botão sair -->
+  <div class="top-bar">
+    <button class="logout-btn">Sair</button>
   </div>
 
-  <div id="app-section" class="hidden">
-    <h2>Adicionar Tarefa</h2>
-    <form id="task-form">
-      <label>Título</label>
-      <input type="text" id="titulo" required />
-      <label>Cliente</label>
-      <input type="text" id="cliente" required />
-      <label>Descrição</label>
-      <input type="text" id="descricao" required />
-      <label>Prazo</label>
-      <input type="date" id="prazo" required />
-      <button type="submit">Adicionar</button>
-    </form>
+  <!-- Caixa de adicionar tarefa -->
+  <div class="add-task">
+    <h3>Adicionar Tarefa</h3>
+    <input type="text" placeholder="Título da tarefa">
+    <input type="text" placeholder="Cliente">
+    <textarea placeholder="Descrição"></textarea>
+    <input type="date">
+    <button>Adicionar</button>
   </div>
 
-  <ul id="tasks-list"></ul>
-
-  <!-- Modal confirmação -->
-  <div id="confirm-modal">
-    <div id="confirm-box">
-      <p>Deseja mesmo excluir esta tarefa?</p>
-      <button id="confirm-yes">Sim</button>
-      <button id="confirm-no">Não</button>
+  <!-- Lista de tarefas -->
+  <div class="task-list">
+    <div class="task-card" onclick="expandTask(this)">
+      <div class="task-header">
+        <h3 class="task-title">Título da tarefa</h3>
+        <span class="task-client">Cliente: Fulano</span>
+      </div>
+      <div class="task-body">
+        <p><strong>Descrição:</strong> Aqui vai a descrição da tarefa.</p>
+        <p><strong>Prazo:</strong> 2025-08-27</p>
+        <p><strong>Status:</strong> 🔴 Atrasado</p>
+        <button class="delete-btn" onclick="confirmDelete(event)">🗑</button>
+      </div>
     </div>
   </div>
 
-  <!-- Firebase compat -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <!-- Modal de confirmação -->
+  <div class="modal" id="deleteModal">
+    <div class="modal-content">
+      <p>Deseja mesmo excluir essa tarefa?</p>
+      <button class="confirm" onclick="deleteTask()">Sim</button>
+      <button class="cancel" onclick="closeModal()">Não</button>
+    </div>
+  </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyASdljETbk28Lx8iNtKT3sQyP8jGv5_Z2c",
-      authDomain: "mini-app-prazos.firebaseapp.com",
-      projectId: "mini-app-prazos",
-      storageBucket: "mini-app-prazos.appspot.com",
-      messagingSenderId: "865106773358",
-      appId: "1:865106773358:web:d6958799a298ff3545ed7f",
-      measurementId: "G-6FL25L93J0"
-    };
+    let taskToDelete = null;
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    const loginSection = document.getElementById("login-section");
-    const appSection = document.getElementById("app-section");
-    const message = document.getElementById("message");
-    const tasksList = document.getElementById("tasks-list");
-    const logoutBtn = document.getElementById("logout-btn");
-
-    // Login
-    document.getElementById("login-btn").onclick = async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        message.style.color = "#4caf50";
-        message.textContent = "Login realizado com sucesso!";
-      } catch (e) {
-        message.style.color = "#f44336";
-        message.textContent = "Email ou senha incorretos!";
-      }
-    };
-
-    // Registro
-    document.getElementById("register-btn").onclick = async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        message.style.color = "#4caf50";
-        message.textContent = "Registro realizado com sucesso!";
-      } catch (e) {
-        message.style.color = "#f44336";
-        message.textContent = "Erro no registro: " + e.message;
-      }
-    };
-
-    // Logout
-    logoutBtn.onclick = () => auth.signOut();
-
-    // Monitorar login
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        loginSection.classList.add("hidden");
-        appSection.classList.remove("hidden");
-        logoutBtn.classList.remove("hidden");
-        carregarTarefas(user.uid);
-      } else {
-        loginSection.classList.remove("hidden");
-        appSection.classList.add("hidden");
-        logoutBtn.classList.add("hidden");
-        tasksList.innerHTML = "";
-      }
-    });
-
-    // Adicionar tarefa
-    document.getElementById("task-form").onsubmit = async (e) => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const titulo = document.getElementById("titulo").value;
-      const descricao = document.getElementById("descricao").value;
-      const cliente = document.getElementById("cliente").value;
-      const prazo = document.getElementById("prazo").value;
-
-      await db.collection("users").doc(user.uid).collection("tasks").add({
-        titulo, descricao, cliente, prazo,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      e.target.reset();
-    };
-
-    // Carregar tarefas
-    function carregarTarefas(uid) {
-      db.collection("users").doc(uid).collection("tasks")
-        .orderBy("prazo")
-        .onSnapshot(snapshot => {
-          tasksList.innerHTML = "";
-          const hoje = new Date();
-          const tarefas = [];
-
-          snapshot.forEach(doc => {
-            const t = doc.data();
-            tarefas.push({id: doc.id, ...t});
-          });
-
-          // Ordenar pelo prazo mais próximo
-          tarefas.sort((a, b) => new Date(a.prazo) - new Date(b.prazo));
-
-          tarefas.forEach(t => {
-            const prazo = new Date(t.prazo);
-            const total = prazo - new Date(t.createdAt?.toDate?.() || hoje);
-            const decorrido = hoje - new Date(t.createdAt?.toDate?.() || hoje);
-            const progresso = total > 0 ? Math.min((decorrido / total) * 100, 100) : 100;
-
-            let cor = "verde";
-            if (progresso >= 40 && progresso < 60) cor = "laranja";
-            else if (progresso >= 60 && progresso < 85) cor = "vermelho";
-            else if (progresso >= 85) cor = "alerta";
-
-            const li = document.createElement("li");
-            li.className = "task";
-
-            const dot = document.createElement("div");
-            dot.className = `status-dot ${cor}`;
-
-            const info = document.createElement("div");
-            info.className = "info";
-            info.innerHTML = `<div class="title">${t.titulo} - Cliente: ${t.cliente} | Prazo: ${t.prazo}</div>
-                              <div class="details">${t.descricao} <br>${Math.floor(progresso)}% do prazo decorrido</div>`;
-
-            const deleteBtn = document.createElement("button");
-            deleteBtn.className = "delete-btn";
-            deleteBtn.innerHTML = "🗑️";
-
-            deleteBtn.onclick = (ev) => {
-              ev.stopPropagation();
-              abrirConfirmacao(uid, t.id);
-            };
-
-            li.appendChild(dot);
-            li.appendChild(info);
-            li.appendChild(deleteBtn);
-
-            li.onclick = () => li.classList.toggle("expanded");
-
-            tasksList.appendChild(li);
-          });
-        });
+    function expandTask(card) {
+      card.classList.toggle("expanded");
     }
 
-    // Modal confirmação
-    const confirmModal = document.getElementById("confirm-modal");
-    const confirmYes = document.getElementById("confirm-yes");
-    const confirmNo = document.getElementById("confirm-no");
-    let tarefaParaExcluir = null;
-
-    function abrirConfirmacao(uid, id) {
-      confirmModal.classList.add("active");
-      tarefaParaExcluir = {uid, id};
+    function confirmDelete(event) {
+      event.stopPropagation();
+      taskToDelete = event.target.closest(".task-card");
+      document.getElementById("deleteModal").style.display = "flex";
     }
 
-    confirmNo.onclick = () => {
-      confirmModal.classList.remove("active");
-      tarefaParaExcluir = null;
-    };
-
-    confirmYes.onclick = async () => {
-      if (tarefaParaExcluir) {
-        await db.collection("users").doc(tarefaParaExcluir.uid).collection("tasks").doc(tarefaParaExcluir.id).delete();
+    function deleteTask() {
+      if (taskToDelete) {
+        taskToDelete.remove();
+        taskToDelete = null;
       }
-      confirmModal.classList.remove("active");
-      tarefaParaExcluir = null;
-    };
+      closeModal();
+    }
+
+    function closeModal() {
+      document.getElementById("deleteModal").style.display = "none";
+    }
   </script>
+
 </body>
 </html>
